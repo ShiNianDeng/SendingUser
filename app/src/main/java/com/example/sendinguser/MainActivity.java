@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         calendarIntent.putExtra(Events.TITLE, "Ninja class");
         calendarIntent.putExtra(Events.EVENT_LOCATION, "Secret dojo");
 
+        //验证是否存在接收Intent的应用
         List<ResolveInfo> resolveInfos = getPackageManager().queryIntentActivities(calendarIntent,0);
         if(resolveInfos.size()>0){
             startActivity(calendarIntent);
