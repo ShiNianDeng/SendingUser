@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SendingUser</string>
+    <string name="chooser_title">Share this photo with</string>
 </resources>

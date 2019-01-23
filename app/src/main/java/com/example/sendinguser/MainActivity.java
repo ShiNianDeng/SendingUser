@@ -1,10 +1,14 @@
 package com.example.sendinguser;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import android.database.Cursor;
 import android.net.Uri;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.provider.CalendarContract.Events;
 
@@ -71,9 +75,53 @@ public class MainActivity extends AppCompatActivity {
         calendarIntent.putExtra(Events.EVENT_LOCATION, "Secret dojo");
 
         //验证是否存在接收Intent的应用
-        List<ResolveInfo> resolveInfos = getPackageManager().queryIntentActivities(calendarIntent,0);
-        if(resolveInfos.size()>0){
+        List<ResolveInfo> resolveInfos = getPackageManager().queryIntentActivities(calendarIntent, 0);
+        if (resolveInfos.size() > 0) {
             startActivity(calendarIntent);
+        }
+    }
+
+    public void share(View view) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+
+        // Always use string resources for UI text.
+        // This says something like "Share this photo with"
+        String title = getResources().getString(R.string.chooser_title);
+        // Create intent to show chooser
+        Intent chooser = Intent.createChooser(intent, title);
+
+        // Verify the intent will resolve to at least one activity
+        ComponentName componentName = intent.resolveActivity(getPackageManager());
+        Log.i(TAG, "share: " + componentName);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(chooser);
+        }
+    }
+
+    private static final String TAG = "MainActivity";
+
+    //选择联系人返回结果
+    public void pickContact(View view) {
+        Intent pickContact = new Intent(Intent.ACTION_PICK, Uri.parse("content://contacts"));
+        pickContact.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
+        startActivityForResult(pickContact, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                Uri uri = data.getData();
+                if (uri != null) {
+                    Cursor cursor = getContentResolver().query(uri, new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER}, null, null, null);
+                    cursor.moveToFirst();
+                    int number = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                    String phone = cursor.getString(number);
+                    cursor.close();
+                    Log.i(TAG, "onActivityResult: " + phone);
+                }
+            }
         }
     }
 }
